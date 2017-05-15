@@ -7,27 +7,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="LemonChiffon" 
+          AllowDrop="True" 
+              DragOver="Grid_DragOver" 
+              Drop="Grid_Drop" 
+              DragStarting="Image_DragStarting" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <GridView AllowDrop="True" 
-              DragOver="Grid_DragOver" 
-              Drop="Grid_Drop" 
-              DragStarting="Image_DragStarting" 
-              Background="LightBlue" Margin="10,10,10,353">
-            <TextBlock>Drop anywhere in the blue area</TextBlock>
-        </GridView>
-        <Image x:Name="Image" DragStarting="Image_DragStarting"  CanDrag="True" Grid.Row="0" Grid.Column="0" Margin="10,292,10,0" Height="338"></Image>
-        
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
-            <Button Name="SelectImage" Click="SelectImage_Click" Content="Select Image" Margin="10" />
-            <Button Name="Button" Click="Button_Click" Content="New Instance" Margin="10" />
+        <StackPanel Orientation="Horizontal" Margin="1,1,1,1">
+            <Button x:Name="SelectImage" Click="SelectImage_Click" Content="Select Image" />
+            <Button x:Name="Button" Click="Button_Click" Content="New Instance" />
         </StackPanel>
+        <Canvas x:Name="Image" DragStarting="Image_DragStarting"  CanDrag="True" Grid.Row="1" Grid.Column="0" Margin="9,16,1,10"/>
         <GridView Name="Results" Margin="10,30,10,10" Grid.Row="1" >
-           
+
         </GridView>
     </Grid>
 </Page>

@@ -125,7 +125,18 @@ namespace PhotoViewerCSharp
                     var bitmapImage = new BitmapImage();
                     bitmapImage.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
                     // Set the image on the main page to the dropped image
-                    Image.Source = bitmapImage;
+                    Image img = new Image();
+                    img.Source = bitmapImage;
+                    double maxDim = 500;
+                    if (img.Width > img.Height)
+                    {
+                        img.Width = maxDim;
+                    }
+                    else
+                    {
+                        img.Height = maxDim;
+                    }
+                    Image.Children.Add(img);
                 }
             }
             else
@@ -135,7 +146,18 @@ namespace PhotoViewerCSharp
                 draggedStream = await thumbnail.OpenReadAsync();
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.SetSource(draggedStream);
-                Image.Source = bitmapImage;
+                Image img = new Image();
+                img.Source = bitmapImage;
+                double maxDim = 500;
+                if (img.Width > img.Height)
+                {
+                    img.Width = maxDim;
+                }
+                else
+                {
+                    img.Height = maxDim;
+                }
+                Image.Children.Add(img);
             }
         }
         private async void Image_DragStarting(UIElement sender, DragStartingEventArgs args)
