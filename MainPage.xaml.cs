@@ -38,6 +38,9 @@ namespace PhotoViewerCSharp
         private BitmapImage bitmapimage;
         private GridView grid;
         private IRandomAccessStreamWithContentType draggedStream;
+        private List<IRandomAccessStreamWithContentType> layers; // all dragged items
+        //OR all objects extracted from current image + dragged items
+
 
         public MainPage()
         {
@@ -160,7 +163,7 @@ namespace PhotoViewerCSharp
                 Image.Children.Add(img);
             }
         }
-        private async void Image_DragStarting(UIElement sender, DragStartingEventArgs args)
+        private async void Image_DragStarting(UIElement sender, DragStartingEventArgs args) // put alpha channels to max here to pixels dragged 
         {
             args.Data.RequestedOperation = DataPackageOperation.Copy;
             //args.Data.SetStorageItems(files);
