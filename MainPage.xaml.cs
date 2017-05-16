@@ -33,7 +33,7 @@ namespace PhotoViewerCSharp
     public sealed partial class MainPage : Page
     {
         private StorageFile imageFile;
-        private IRandomAccessStreamWithContentType draggedStream;
+        private int lastAddedStreamID = -1;
         private List<IRandomAccessStreamWithContentType> layers; // all dragged items
         //OR all objects extracted from current image + dragged items
 
@@ -41,6 +41,7 @@ namespace PhotoViewerCSharp
         public MainPage()
         {
             this.InitializeComponent();
+            layers = new List<IRandomAccessStreamWithContentType>();
 
         }
 
@@ -97,7 +98,8 @@ namespace PhotoViewerCSharp
                     var storageFile = items[0] as StorageFile;
                     var bitmapImage = new BitmapImage();
                     IRandomAccessStreamWithContentType newStream = await imageFile.OpenReadAsync();
-                    draggedStream = newStream;
+                    lastAddedStreamID++;
+                    layers.Add(newStream);
                     AddDraggedStream();
                 }
             }
@@ -106,16 +108,17 @@ namespace PhotoViewerCSharp
             {
                 RandomAccessStreamReference data = await e.DataView.GetBitmapAsync();
                 IRandomAccessStreamWithContentType newStream = await data.OpenReadAsync();
-                draggedStream = newStream;
+                lastAddedStreamID++;
+                layers.Add(newStream);
                 AddDraggedStream();
             }
         }
 
         private void AddDraggedStream()
         {
-            
+
             BitmapImage bitmapImage = new BitmapImage();
-            bitmapImage.SetSource(draggedStream);
+            bitmapImage.SetSource(layers[lastAddedStreamID]);
             Image img = new Image();
             img.Source = bitmapImage;
             double maxDim = 500;
@@ -168,7 +171,7 @@ namespace PhotoViewerCSharp
             }
             else
             {
-                args.Data.SetBitmap(RandomAccessStreamReference.CreateFromStream(draggedStream));
+                args.Data.SetBitmap(RandomAccessStreamReference.CreateFromStream(layers[lastAddedStreamID]));
             }
         }
 
