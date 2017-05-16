@@ -33,10 +33,6 @@ namespace PhotoViewerCSharp
     public sealed partial class MainPage : Page
     {
         private StorageFile imageFile;
-        private Image image;
-        private IRandomAccessStream stream;
-        private BitmapImage bitmapimage;
-        private GridView grid;
         private IRandomAccessStreamWithContentType draggedStream;
         private List<IRandomAccessStreamWithContentType> layers; // all dragged items
         //OR all objects extracted from current image + dragged items
@@ -45,8 +41,7 @@ namespace PhotoViewerCSharp
         public MainPage()
         {
             this.InitializeComponent();
-            grid = new GridView();
-            grid.Margin = new Thickness(5, 5, 5, 5);
+
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
@@ -87,31 +82,6 @@ namespace PhotoViewerCSharp
 
             this.SelectImage.IsEnabled = true;
         }
-
-        private async Task ShowImage()
-        {
-            bitmapimage = new BitmapImage();
-            stream = await imageFile.OpenAsync(Windows.Storage.FileAccessMode.Read);
-            await bitmapimage.SetSourceAsync(stream);
-
-            this.image = new Image();
-            this.image.Source = bitmapimage;
-            double maxDim = 700;
-            if (image.Width > image.Height)
-            {
-                image.Width = maxDim;
-            }
-            else
-            {
-                image.Height = maxDim;
-            }
-
-            //image.PointerPressed += new Windows.UI.Xaml.Input.PointerEventHandler(SaveSelectedImage_PointerPressed);
-
-            
-            grid.Items.Add(image);
-            Results.Items.Add(grid);
-        }
         private void Grid_DragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
@@ -126,43 +96,68 @@ namespace PhotoViewerCSharp
                 {
                     var storageFile = items[0] as StorageFile;
                     var bitmapImage = new BitmapImage();
-                    bitmapImage.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
-                    // Set the image on the main page to the dropped image
-                    Image img = new Image();
-                    img.Source = bitmapImage;
-                    double maxDim = 500;
-                    if (img.Width > img.Height)
-                    {
-                        img.Width = maxDim;
-                    }
-                    else
-                    {
-                        img.Height = maxDim;
-                    }
-                    Image.Children.Add(img);
+                    IRandomAccessStreamWithContentType newStream = await imageFile.OpenReadAsync();
+                    draggedStream = newStream;
+                    AddDraggedStream();
                 }
             }
             else
             if (e.DataView.Contains(StandardDataFormats.Bitmap))
             {
-                RandomAccessStreamReference thumbnail = await e.DataView.GetBitmapAsync();
-                draggedStream = await thumbnail.OpenReadAsync();
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.SetSource(draggedStream);
-                Image img = new Image();
-                img.Source = bitmapImage;
-                double maxDim = 500;
-                if (img.Width > img.Height)
-                {
-                    img.Width = maxDim;
-                }
-                else
-                {
-                    img.Height = maxDim;
-                }
-                Image.Children.Add(img);
+                RandomAccessStreamReference data = await e.DataView.GetBitmapAsync();
+                IRandomAccessStreamWithContentType newStream = await data.OpenReadAsync();
+                draggedStream = newStream;
+                AddDraggedStream();
             }
         }
+
+        private void AddDraggedStream()
+        {
+            
+            BitmapImage bitmapImage = new BitmapImage();
+            bitmapImage.SetSource(draggedStream);
+            Image img = new Image();
+            img.Source = bitmapImage;
+            double maxDim = 500;
+            if (img.Width > img.Height)
+            {
+                img.Width = maxDim;
+            }
+            else
+            {
+                img.Height = maxDim;
+            }
+            Image.Children.Add(img);
+        }
+
+        private async Task ShowImage()
+        {
+            BitmapImage bitmapimage = new BitmapImage();
+            IRandomAccessStreamWithContentType newStream = await imageFile.OpenReadAsync();
+
+            //AddNewStream(newStream);
+            await bitmapimage.SetSourceAsync(newStream);
+
+            Image image = new Image();
+            image.Source = bitmapimage;
+            double maxDim = 700;
+            if (image.Width > image.Height)
+            {
+                image.Width = maxDim;
+            }
+            else
+            {
+                image.Height = maxDim;
+            }
+
+            //image.PointerPressed += new Windows.UI.Xaml.Input.PointerEventHandler(SaveSelectedImage_PointerPressed);
+            GridView grid = new GridView();
+            grid.Margin = new Thickness(5, 5, 5, 5);
+
+            grid.Items.Add(image);
+            Results.Items.Add(grid);
+        }
+
         private async void Image_DragStarting(UIElement sender, DragStartingEventArgs args) // put alpha channels to max here to pixels dragged 
         {
             args.Data.RequestedOperation = DataPackageOperation.Copy;
@@ -180,7 +175,7 @@ namespace PhotoViewerCSharp
         private void Grid_DragOverCustomized(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
-            e.DragUIOverride.Caption = "Custom text here"; // Sets custom UI text
+            e.DragUIOverride.Caption = "Drag here"; // Sets custom UI text
             e.DragUIOverride.SetContentFromBitmapImage(null); // Sets a custom glyph
             e.DragUIOverride.IsCaptionVisible = true; // Sets if the caption is visible
             e.DragUIOverride.IsContentVisible = true; // Sets if the dragged content is visible
@@ -205,7 +200,7 @@ namespace PhotoViewerCSharp
                 img.Height = maxDim;
             }
  
-            grid.Items.Add(img);
+           // grid.Items.Add(img);
             //Results.Items.Add(grid);
         }
 
