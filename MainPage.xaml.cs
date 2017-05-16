@@ -42,10 +42,9 @@ namespace PhotoViewerCSharp
         {
             this.InitializeComponent();
             layers = new List<IRandomAccessStreamWithContentType>();
-
         }
 
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private async void NewInstance_Click(object sender, RoutedEventArgs e)
         {
             CoreApplicationView newView = CoreApplication.CreateNewView();
             int newViewId = 0;
@@ -62,27 +61,6 @@ namespace PhotoViewerCSharp
             bool viewShown = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newViewId);
         }
 
-        private async Task<StorageFile> PickImageFileAsync()
-        {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            openPicker.FileTypeFilter.Add(".jpg");
-            openPicker.FileTypeFilter.Add(".png");
-            openPicker.FileTypeFilter.Add(".jpeg");
-
-            return await openPicker.PickSingleFileAsync();
-        }
-
-        private async void SelectImage_Click(object sender, RoutedEventArgs e)
-        {
-            this.SelectImage.IsEnabled = false;
-
-            this.imageFile = await PickImageFileAsync();
-            await ShowImage();
-
-            this.SelectImage.IsEnabled = true;
-        }
         private void Grid_DragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
@@ -133,6 +111,51 @@ namespace PhotoViewerCSharp
             Image.Children.Add(img);
         }
 
+        private async void Image_DragStarting(UIElement sender, DragStartingEventArgs args) // put alpha channels to max here to pixels dragged 
+        {
+            args.Data.RequestedOperation = DataPackageOperation.Copy;
+            //args.Data.SetStorageItems(files);
+            if (imageFile!=null) { 
+                var str = await imageFile.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                args.Data.SetBitmap(RandomAccessStreamReference.CreateFromStream(str));
+            }
+            else
+            {
+                args.Data.SetBitmap(RandomAccessStreamReference.CreateFromStream(layers[lastAddedStreamID]));
+            }
+        }
+
+        private void Grid_DragOverCustomized(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = "Drag here"; // Sets custom UI text
+            e.DragUIOverride.SetContentFromBitmapImage(null); // Sets a custom glyph
+            e.DragUIOverride.IsCaptionVisible = true; // Sets if the caption is visible
+            e.DragUIOverride.IsContentVisible = true; // Sets if the dragged content is visible
+            e.DragUIOverride.IsGlyphVisible = true; // Sets if the glyph is visibile
+        }
+
+        private async Task<StorageFile> PickImageFileAsync()
+        {
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            openPicker.FileTypeFilter.Add(".jpg");
+            openPicker.FileTypeFilter.Add(".png");
+            openPicker.FileTypeFilter.Add(".jpeg");
+
+            return await openPicker.PickSingleFileAsync();
+        }
+
+        private async void SelectImage_Click(object sender, RoutedEventArgs e)
+        {
+            this.SelectImage.IsEnabled = false;
+
+            this.imageFile = await PickImageFileAsync();
+            await ShowImage();
+
+            this.SelectImage.IsEnabled = true;
+        }
         private async Task ShowImage()
         {
             BitmapImage bitmapimage = new BitmapImage();
@@ -159,30 +182,6 @@ namespace PhotoViewerCSharp
 
             grid.Items.Add(image);
             Results.Items.Add(grid);
-        }
-
-        private async void Image_DragStarting(UIElement sender, DragStartingEventArgs args) // put alpha channels to max here to pixels dragged 
-        {
-            args.Data.RequestedOperation = DataPackageOperation.Copy;
-            //args.Data.SetStorageItems(files);
-            if (imageFile!=null) { 
-                var str = await imageFile.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                args.Data.SetBitmap(RandomAccessStreamReference.CreateFromStream(str));
-            }
-            else
-            {
-                args.Data.SetBitmap(RandomAccessStreamReference.CreateFromStream(layers[lastAddedStreamID]));
-            }
-        }
-
-        private void Grid_DragOverCustomized(object sender, DragEventArgs e)
-        {
-            e.AcceptedOperation = DataPackageOperation.Copy;
-            e.DragUIOverride.Caption = "Drag here"; // Sets custom UI text
-            e.DragUIOverride.SetContentFromBitmapImage(null); // Sets a custom glyph
-            e.DragUIOverride.IsCaptionVisible = true; // Sets if the caption is visible
-            e.DragUIOverride.IsContentVisible = true; // Sets if the dragged content is visible
-            e.DragUIOverride.IsGlyphVisible = true; // Sets if the glyph is visibile
         }
 
         private async void SaveSelectedImage_PointerPressed(object sender, PointerRoutedEventArgs e)

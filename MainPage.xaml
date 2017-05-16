@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Margin="1,1,1,1">
             <Button x:Name="SelectImage" Click="SelectImage_Click" Content="Select Image" />
-            <Button x:Name="Button" Click="Button_Click" Content="New Instance" />
+            <Button x:Name="InstanceCreator" Click="NewInstance_Click" Content="New Instance" />
         </StackPanel>
         <Canvas x:Name="Image" DragStarting="Image_DragStarting"  CanDrag="True" Grid.Row="1" Grid.Column="0" Margin="9,16,1,10"/>
         <GridView Name="Results" Margin="10,30,10,10" Grid.Row="1" >
